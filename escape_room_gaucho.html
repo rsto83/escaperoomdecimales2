@@ -1,0 +1,471 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Escape Room Gaucho: El Gran Desafío de la Estancia "El Ombú"</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- MathJax for rendering math expressions -->
+    <script>
+        window.MathJax = {
+            tex: {
+                inlineMath: [['$', '$'], ['\\(', '\\)']]
+            },
+            svg: {
+                fontCache: 'global'
+            }
+        };
+    </script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700;800&family=Quicksand:wght@500;600;700&display=swap');
+        
+        .font-gaucho {
+            font-family: 'Cinzel', serif;
+        }
+        .font-body {
+            font-family: 'Quicksand', sans-serif;
+        }
+        .bg-pampa {
+            background-color: #f4ebd9;
+            background-image: radial-gradient(#d4c39e 1px, transparent 1px);
+            background-size: 20px 20px;
+        }
+    </style>
+</head>
+<body class="bg-pampa font-body text-slate-800 min-h-screen flex flex-col justify-between">
+
+    <!-- Header / Status Bar -->
+    <header class="bg-amber-900 text-amber-50 shadow-lg border-b-4 border-amber-950 p-4 sticky top-0 z-50">
+        <div class="max-w-5xl mx-auto flex flex-wrap justify-between items-center gap-4">
+            <div>
+                <h1 class="font-gaucho text-xl md:text-2xl font-bold tracking-wide">Estancia "El Ombú"</h1>
+                <p class="text-xs text-amber-200">El Desafío de Don Martiniano</p>
+            </div>
+
+            <!-- Stats Bar -->
+            <div id="stats-bar" class="hidden flex items-center gap-6 bg-amber-950/60 px-4 py-2 rounded-xl border border-amber-700/50">
+                <!-- Vidas -->
+                <div class="flex items-center gap-2">
+                    <span class="text-xs font-bold uppercase tracking-wider text-amber-200">Vidas:</span>
+                    <div id="lives-container" class="flex gap-1 text-xl">
+                        <!-- Corazones/Vidas renderizadas por JS -->
+                    </div>
+                </div>
+
+                <!-- Temporizador -->
+                <div class="flex items-center gap-2">
+                    <span class="text-xs font-bold uppercase tracking-wider text-amber-200">Tiempo:</span>
+                    <span id="timer" class="font-mono text-xl font-bold text-amber-300">30:00</span>
+                </div>
+
+                <!-- Progreso -->
+                <div class="flex items-center gap-2">
+                    <span class="text-xs font-bold uppercase tracking-wider text-amber-200">Sala:</span>
+                    <span id="room-counter" class="font-bold text-amber-100">1/10</span>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Container -->
+    <main class="max-w-4xl mx-auto w-full p-4 flex-grow flex items-center justify-center">
+
+        <!-- pantalla de Inicio -->
+        <section id="start-screen" class="bg-amber-50 border-2 border-amber-800/30 rounded-2xl p-6 md:p-10 shadow-xl text-center space-y-6 max-w-2xl w-full my-auto">
+            <div class="inline-block bg-amber-100 text-amber-900 px-4 py-1 rounded-full text-sm font-semibold border border-amber-300">
+                4.º Grado de Primaria • Matemática Gauchesca
+            </div>
+            <h2 class="font-gaucho text-3xl md:text-4xl font-extrabold text-amber-950">
+                ¡Ayuda a Don Martiniano!
+            </h2>
+            <p class="text-slate-700 leading-relaxed text-base md:text-lg">
+                Se ha caído la noche en la pampa y Don Martiniano necesita recuperar las herramientas perdidas por los potreros para descifrar la combinación del gran candado de la pulpería.
+            </p>
+            <div class="bg-amber-100/70 p-4 rounded-xl text-left border border-amber-300/60 text-sm space-y-2 text-amber-950">
+                <p class="font-bold flex items-center gap-2">
+                    <span>⚠️</span> Reglas de la Aventura:
+                </p>
+                <ul class="list-disc list-inside space-y-1 text-slate-700">
+                    <li>Tienes <strong>30 minutos</strong> para completar las 10 salas.</li>
+                    <li>Comienzas con <strong>3 vidas</strong> 🐎. Cada fallo restará 1 vida.</li>
+                    <li>Resuelve los problemas con decimales y fracciones para obtener las pistas.</li>
+                </ul>
+            </div>
+            <button onclick="startGame()" class="w-full bg-amber-800 hover:bg-amber-900 text-amber-50 font-bold py-4 px-8 rounded-xl shadow-lg hover:shadow-xl transition transform hover:-translate-y-0.5 active:translate-y-0 font-gaucho text-lg">
+                ¡Comenzar la Travesía!
+            </button>
+        </section>
+
+        <!-- Pantalla de Juego (Salas) -->
+        <section id="game-screen" class="hidden w-full space-y-6">
+            <div class="bg-amber-50 border border-amber-800/20 rounded-2xl p-6 md:p-8 shadow-xl space-y-6">
+                <!-- Encabezado de la Sala -->
+                <div class="border-b border-amber-200 pb-4 flex flex-wrap justify-between items-center gap-2">
+                    <div>
+                        <span id="room-subtitle" class="text-xs font-bold uppercase tracking-widest text-amber-700">
+                            Subtítulo
+                        </span>
+                        <h2 id="room-title" class="font-gaucho text-2xl md:text-3xl font-bold text-amber-950">
+                            Título de la Sala
+                        </h2>
+                    </div>
+                    <span id="badge-room" class="bg-amber-200 text-amber-900 font-bold px-3 py-1 rounded-lg text-sm">
+                        Sala 1
+                    </span>
+                </div>
+
+                <!-- Historia / Contexto -->
+                <div id="room-story" class="bg-amber-100/50 p-4 rounded-xl border border-amber-200 text-slate-700 text-base leading-relaxed italic">
+                    Historia...
+                </div>
+
+                <!-- Reto / Pregunta -->
+                <div class="space-y-4">
+                    <p id="room-challenge" class="font-bold text-slate-800 text-lg">
+                        Pregunta o Reto...
+                    </p>
+
+                    <!-- Opciones / Formulario de Respuesta -->
+                    <div id="options-container" class="grid grid-cols-1 md:grid-cols-2 gap-3 pt-2">
+                        <!-- Generado por JS -->
+                    </div>
+                </div>
+
+                <!-- Mensaje de Feedback -->
+                <div id="feedback-msg" class="hidden p-4 rounded-xl text-center font-bold transition-all"></div>
+            </div>
+        </section>
+
+        <!-- Pantalla de Victoria -->
+        <section id="win-screen" class="hidden bg-emerald-50 border-2 border-emerald-600/30 rounded-2xl p-8 shadow-xl text-center space-y-6 max-w-2xl w-full my-auto">
+            <div class="text-6xl">🎉 🧉 🐎</div>
+            <h2 class="font-gaucho text-3xl md:text-4xl font-extrabold text-emerald-950">
+                ¡Misión Cumplida!
+            </h2>
+            <p class="text-slate-700 text-lg">
+                Lograste descifrar el código del candado <strong class="text-emerald-800 text-2xl font-mono block mt-2">2715</strong> y abriste la pulpería a tiempo. Don Martiniano te agradece de corazón por tu ayuda con los decimales.
+            </p>
+            <div class="bg-emerald-100/70 p-4 rounded-xl border border-emerald-300 text-emerald-950 font-semibold">
+                ¡Demostraste un excelente dominio de las fracciones y números decimales en la pampa!
+            </div>
+            <button onclick="resetGame()" class="bg-emerald-700 hover:bg-emerald-800 text-white font-bold py-3 px-8 rounded-xl shadow-md transition font-gaucho">
+                Jugar de Nuevo
+            </button>
+        </section>
+
+        <!-- Pantalla de Derrota -->
+        <section id="game-over-screen" class="hidden bg-rose-50 border-2 border-rose-600/30 rounded-2xl p-8 shadow-xl text-center space-y-6 max-w-2xl w-full my-auto">
+            <div class="text-6xl">🌵 🌑 💔</div>
+            <h2 class="font-gaucho text-3xl md:text-4xl font-extrabold text-rose-950">
+                Se Acabó el Tiempo
+            </h2>
+            <p id="game-over-reason" class="text-slate-700 text-lg">
+                Anocheció en el campo y no pudimos abrir la pulpería.
+            </p>
+            <p class="text-sm text-slate-500">
+                Repasa el valor decimal de las fracciones y vuelve a intentarlo. ¡El campo siempre da otra oportunidad!
+            </p>
+            <button onclick="resetGame()" class="bg-rose-700 hover:bg-rose-800 text-white font-bold py-3 px-8 rounded-xl shadow-md transition font-gaucho">
+                Intentar Nuevamente
+            </button>
+        </section>
+
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-amber-950 text-amber-200/70 text-center py-3 text-xs border-t border-amber-900">
+        Escape Room Educativo • Matemática para 4.º Grado de Primaria
+    </footer>
+
+    <!-- Game Logic JavaScript -->
+    <script>
+        const rooms = [
+            {
+                id: 1,
+                title: "Sala 1: El Reparto de Yerba",
+                subtitle: "Conversión básica de fracción a decimal",
+                story: "Don Martiniano abrió un paquete de yerba mate y usó exactamente $\\frac{1}{4}$ kg para cebar unos mates al amanecer.",
+                challenge: "¿Qué valor decimal marca la balanza al pesar la yerba que usó el gaucho?",
+                options: [
+                    { text: "$0{,}4$", correct: false },
+                    { text: "$0{,}25$", correct: true, key: "2" },
+                    { text: "$0{,}14$", correct: false }
+                ],
+                explanation: "¡Correcto! $\\frac{1}{4}$ equivale a $0{,}25$. Pista obtenida: Dígito 2."
+            },
+            {
+                id: 2,
+                title: "Sala 2: Las Cuerdas de Cuero",
+                subtitle: "Ubicación y comparación en la recta numérica",
+                story: "El gaucho extendió dos tiras de cuero para arreglar el recado de su caballo: una mide $0{,}5$ metros y la otra mide $0{,}75$ metros.",
+                challenge: "¿Cuál de las dos cuerdas es más larga y cómo se comparan?",
+                options: [
+                    { text: "La de $0{,}5$ m es más larga", correct: false },
+                    { text: "La de $0{,}75$ m es más larga ($0{,}75 > 0{,}5$)", correct: true, key: "7" },
+                    { text: "Miden exactamente lo mismo", correct: false }
+                ],
+                explanation: "¡Exacto! $0{,}75$ es mayor que $0{,}5$ ($0{,}50$). Pista obtenida: Dígito 7."
+            },
+            {
+                id: 3,
+                title: "Sala 3: El Alimento del Caballo",
+                subtitle: "Fracciones mayores a la unidad",
+                story: "Para la jornada de trabajo, el caballo comió $\\frac{9}{8}$ de bolsa de avena. (Pista: Ten presente que $\\frac{8}{8} = 1$ entero y $\\frac{1}{8} = 0{,}125$).",
+                challenge: "¿A qué número decimal equivale $\\frac{9}{8}$?",
+                options: [
+                    { text: "$1{,}25$ (o $1{,}125$)", correct: true, key: "1" },
+                    { text: "$0{,}98$", correct: false },
+                    { text: "$9{,}8$", correct: false }
+                ],
+                explanation: "¡Muy bien! $\\frac{9}{8} = 1 + \\frac{1}{8} = 1{,}125$ (aproximado a $1{,}25$ en el aula). Pista obtenida: Dígito 1."
+            },
+            {
+                id: 4,
+                title: "Sala 4: La Carrera en la Pista",
+                subtitle: "Comparación de decimales",
+                story: "El caballo 'El Zaino' recorrió $1{,}2$ km del circuito, mientras que 'El Tordillo' recorrió $1{,}15$ km.",
+                challenge: "¿Qué caballo avanzó más distancia? (Pista: Compara décimos con décimos: $1{,}20$ vs $1{,}15$)",
+                options: [
+                    { text: "El Tordillo ($1{,}15$ km)", correct: false },
+                    { text: "El Zaino ($1{,}2$ km)", correct: true },
+                    { text: "Ambos recorrieron lo mismo", correct: false }
+                ],
+                explanation: "¡Excelente! $1{,}2$ ($1{,}20$) es mayor que $1{,}15$."
+            },
+            {
+                id: 5,
+                title: "Sala 5: Marcando la Recta del Corral",
+                subtitle: "Ubicación de decimales intermedios",
+                story: "Hay que colocar postas de madera a lo largo de un sendero de 2 metros. Hay una marca justo en el valor $1{,}5$.",
+                challenge: "¿Entre qué dos números enteros de la recta numérica se encuentra el poste ubicado en $1{,}5$?",
+                options: [
+                    { text: "Entre el 0 y el 1", correct: false },
+                    { text: "Entre el 1 y el 2", correct: true, key: "5" },
+                    { text: "Entre el 2 y el 3", correct: false }
+                ],
+                explanation: "¡Correcto! $1{,}5$ está justo en el medio entre 1 y 2. Pista obtenida: Dígito 5."
+            },
+            {
+                id: 6,
+                title: "Sala 6: La Cosecha de Maíz",
+                subtitle: "Equivalencia entre fracciones décimas y decimales",
+                story: "La carreta cargó $\\frac{5}{10}$ de tonelada de maíz.",
+                challenge: "Selecciona el número decimal equivalente a $\\frac{5}{10}$.",
+                options: [
+                    { text: "$0{,}05$", correct: false },
+                    { text: "$0{,}5$", correct: true },
+                    { text: "$5{,}0$", correct: false }
+                ],
+                explanation: "¡Bien hecho! $\\frac{5}{10}$ equivale a $0{,}5$ (media tonelada)."
+            },
+            {
+                id: 7,
+                title: "Sala 7: Ordenando las Herraduras",
+                subtitle: "Orden ascendente de números decimales",
+                story: "El herrero ordenó cuatro herraduras por su peso en kilogramos: $0{,}8$ kg, $0{,}25$ kg, $1{,}1$ kg y $0{,}5$ kg.",
+                challenge: "¿Cuál es el orden correcto de menor a mayor?",
+                options: [
+                    { text: "$0{,}25 < 0{,}5 < 0{,}8 < 1{,}1$", correct: true },
+                    { text: "$0{,}8 < 0{,}25 < 0{,}5 < 1{,}1$", correct: false },
+                    { text: "$1{,}1 < 0{,}8 < 0{,}5 < 0{,}25$", correct: false }
+                ],
+                explanation: "¡Correcto! Ordenados: $0{,}25 < 0{,}50 < 0{,}80 < 1{,}10$."
+            },
+            {
+                id: 8,
+                title: "Sala 8: El Agua para el Ganado",
+                subtitle: "Suma sencilla de decimales cotidianos",
+                story: "El tajamar recibió $0{,}75$ litros de agua por un canal y $0{,}25$ litros por otro.",
+                challenge: "¿Cuántos litros enteros de agua ingresaron en total al tajamar?",
+                options: [
+                    { text: "$0{,}50$ litros", correct: false },
+                    { text: "$1$ litro entero ($1{,}00$)", correct: true },
+                    { text: "$1{,}25$ litros", correct: false }
+                ],
+                explanation: "¡Exacto! $0{,}75 + 0{,}25 = 1{,}00$ litro entero."
+            },
+            {
+                id: 9,
+                title: "Sala 9: El Espacio del Gallinero",
+                subtitle: "Identificar el decimal mayor",
+                story: "Se comparan dos parcelas de pasto: la Parcela A mide $0{,}6$ del terreno y la Parcela B mide $0{,}45$.",
+                challenge: "¿Cuál de las dos parcelas es mayor?",
+                options: [
+                    { text: "La Parcela A ($0{,}6$)", correct: true },
+                    { text: "La Parcela B ($0{,}45$)", correct: false },
+                    { text: "Son iguales", correct: false }
+                ],
+                explanation: "¡Muy bien! $0{,}60$ es mayor que $0{,}45$."
+            },
+            {
+                id: 10,
+                title: "Sala 10: El Candado de la Pulpería",
+                subtitle: "Síntesis e integración del código",
+                story: "¡Han llegado a la puerta de la pulpería! Para abrir el candado final, deben ingresar la clave compuesta por los dígitos recolectados en las Salas 1, 2, 3 y 5.",
+                challenge: "Ingresa la clave de 4 dígitos:",
+                isInput: true,
+                correctCode: "2715",
+                explanation: "¡Código correcto! Abriste el candado de la pulpería."
+            }
+        ];
+
+        let currentRoomIndex = 0;
+        let lives = 3;
+        let timerSeconds = 30 * 60; // 30 minutos
+        let timerInterval = null;
+
+        function startGame() {
+            document.getElementById('start-screen').classList.add('hidden');
+            document.getElementById('stats-bar').classList.remove('hidden');
+            document.getElementById('game-screen').classList.remove('hidden');
+            
+            currentRoomIndex = 0;
+            lives = 3;
+            timerSeconds = 30 * 60;
+            
+            updateLivesUI();
+            startTimer();
+            loadRoom(currentRoomIndex);
+        }
+
+        function startTimer() {
+            clearInterval(timerInterval);
+            timerInterval = setInterval(() => {
+                timerSeconds--;
+                updateTimerUI();
+
+                if (timerSeconds <= 0) {
+                    clearInterval(timerInterval);
+                    gameOver("Se agotó el tiempo de 30 minutos.");
+                }
+            }, 1000);
+        }
+
+        function updateTimerUI() {
+            const minutes = Math.floor(timerSeconds / 60);
+            const seconds = timerSeconds % 60;
+            document.getElementById('timer').textContent = 
+                `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+        }
+
+        function updateLivesUI() {
+            const container = document.getElementById('lives-container');
+            container.innerHTML = '';
+            for (let i = 0; i < 3; i++) {
+                const heart = document.createElement('span');
+                heart.textContent = '🐎';
+                if (i >= lives) {
+                    heart.classList.add('opacity-30', 'grayscale');
+                }
+                container.appendChild(heart);
+            }
+        }
+
+        function loadRoom(index) {
+            const room = rooms[index];
+            document.getElementById('room-counter').textContent = `${index + 1}/10`;
+            document.getElementById('badge-room').textContent = `Sala ${index + 1}`;
+            document.getElementById('room-title').textContent = room.title;
+            document.getElementById('room-subtitle').textContent = room.subtitle;
+            document.getElementById('room-story').innerHTML = room.story;
+            document.getElementById('room-challenge').innerHTML = room.challenge;
+
+            const optionsContainer = document.getElementById('options-container');
+            optionsContainer.innerHTML = '';
+
+            const feedback = document.getElementById('feedback-msg');
+            feedback.classList.add('hidden');
+
+            if (room.isInput) {
+                // Generar input de código
+                const inputDiv = document.createElement('div');
+                inputDiv.className = 'col-span-full space-y-4';
+                inputDiv.innerHTML = `
+                    <input type="text" id="code-input" maxlength="4" placeholder="Ej: 1234" 
+                           class="w-full max-w-xs mx-auto block text-center text-3xl font-mono tracking-widest p-3 border-2 border-amber-800 rounded-xl focus:outline-none focus:ring-2 focus:ring-amber-600 bg-white" />
+                    <button onclick="checkInputCode()" class="w-full max-w-xs mx-auto block bg-amber-800 hover:bg-amber-900 text-white font-bold py-3 px-6 rounded-xl transition font-gaucho">
+                        Desbloquear Candado
+                    </button>
+                `;
+                optionsContainer.appendChild(inputDiv);
+            } else {
+                // Generar botones de opciones
+                room.options.forEach((opt) => {
+                    const btn = document.createElement('button');
+                    btn.className = "w-full text-left p-4 rounded-xl border-2 border-amber-200 bg-white hover:border-amber-600 hover:bg-amber-100/50 transition font-medium text-slate-800 shadow-sm flex items-center justify-between";
+                    btn.innerHTML = `<span>${opt.text}</span> <span class="text-amber-700 font-bold">➔</span>`;
+                    btn.onclick = () => handleAnswer(opt.correct, room.explanation);
+                    optionsContainer.appendChild(btn);
+                });
+            }
+
+            // Renderizar notación LaTeX con MathJax
+            if (window.MathJax) {
+                MathJax.typesetPromise();
+            }
+        }
+
+        function handleAnswer(isCorrect, explanationText) {
+            const feedback = document.getElementById('feedback-msg');
+            feedback.classList.remove('hidden', 'bg-rose-100', 'text-rose-900', 'border-rose-300', 'bg-emerald-100', 'text-emerald-900', 'border-emerald-300');
+
+            if (isCorrect) {
+                feedback.classList.add('bg-emerald-100', 'text-emerald-900', 'border', 'border-emerald-300');
+                feedback.innerHTML = `💡 ${explanationText} <br><span class="text-xs font-semibold">Cargando siguiente sala...</span>`;
+                
+                setTimeout(() => {
+                    currentRoomIndex++;
+                    if (currentRoomIndex < rooms.length) {
+                        loadRoom(currentRoomIndex);
+                    } else {
+                        winGame();
+                    }
+                }, 2000);
+            } else {
+                lives--;
+                updateLivesUI();
+                feedback.classList.add('bg-rose-100', 'text-rose-900', 'border', 'border-rose-300');
+                feedback.innerHTML = `❌ Respuesta incorrecta. Perdiste 1 vida. ¡Revisa tu razonamiento e inténtalo de nuevo!`;
+
+                if (lives <= 0) {
+                    setTimeout(() => {
+                        gameOver("Te quedaste sin vidas en el camino.");
+                    }, 1500);
+                }
+            }
+        }
+
+        function checkInputCode() {
+            const input = document.getElementById('code-input').value.trim();
+            const room = rooms[currentRoomIndex];
+
+            if (input === room.correctCode) {
+                handleAnswer(true, room.explanation);
+            } else {
+                handleAnswer(false, "");
+            }
+        }
+
+        function winGame() {
+            clearInterval(timerInterval);
+            document.getElementById('game-screen').classList.add('hidden');
+            document.getElementById('win-screen').classList.remove('hidden');
+        }
+
+        function gameOver(reason) {
+            clearInterval(timerInterval);
+            document.getElementById('game-screen').classList.add('hidden');
+            document.getElementById('game-over-reason').textContent = reason;
+            document.getElementById('game-over-screen').classList.remove('hidden');
+        }
+
+        function resetGame() {
+            document.getElementById('win-screen').classList.add('hidden');
+            document.getElementById('game-over-screen').classList.add('hidden');
+            startGame();
+        }
+    </script>
+</body>
+</html>
